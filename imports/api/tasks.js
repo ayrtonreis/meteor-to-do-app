@@ -9,6 +9,7 @@ if (Meteor.isServer) {
     // Only publish tasks that are public or belong to the current user
     Meteor.publish('tasks', function tasksPublication() {
         return Tasks.find({
+            deleted: {$ne: true},
             $or: [
                 { private: { $ne: true } },
                 { owner: this.userId },
@@ -31,6 +32,7 @@ Meteor.methods({
             createdAt: new Date(),
             owner: this.userId,
             username: Meteor.users.findOne(this.userId).username,
+            deleted: false
         });
     },
     'tasks.remove'(taskId) {
@@ -42,7 +44,8 @@ Meteor.methods({
             throw new Meteor.Error('not-authorized');
         }
 
-        Tasks.remove(taskId);
+        //Tasks.remove(taskId);
+        Tasks.update(taskId, { $set: { deleted: true } });
     },
     'tasks.setChecked'(taskId, setChecked) {
         check(taskId, String);
