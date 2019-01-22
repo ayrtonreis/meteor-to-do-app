@@ -12,6 +12,11 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 
+import Input from '@material-ui/core/Input';
+import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+
 import { Tasks } from '../api/tasks.js';
 
 import Task from './Task.js';
@@ -154,6 +159,25 @@ class App extends Component {
 
                         </form>  : ''
                     }
+
+                    <FormControl className={classes.formControl}>
+                        <InputLabel shrink htmlFor="age-label-placeholder">
+                            Priority
+                        </InputLabel>
+                        <Select
+                            value={this.state.newTaskPriority}
+                            onChange={this.handleChange}
+                            input={<Input name="age" id="age-label-placeholder" />}
+                            displayEmpty
+                            name="age"
+                            className={classes.selectEmpty}
+                        >
+                            <MenuItem value={1}>High</MenuItem>
+                            <MenuItem value={2}>Medium</MenuItem>
+                            <MenuItem value={3}>Low</MenuItem>
+                        </Select>
+                    </FormControl>
+
                 </header>
 
                 {/*<ul>*/}
