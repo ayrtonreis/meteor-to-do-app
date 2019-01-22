@@ -37,6 +37,15 @@ const styles = theme => ({
     menu: {
         width: 200,
     },
+    inputTask: {
+        display: 'grid',
+        gridTemplateColumns: 'auto 100px',
+        gridGap: '10px',
+        padding: '10px',
+    },
+    textSelectMenu: {
+        fontSize: '12px',
+    },
 });
 
 
@@ -48,21 +57,40 @@ class App extends Component {
 
         this.state = {
             hideCompleted: false,
+            taskInputText: '',
+            taskInputPriority: 3,
         };
 
+        this.handleTextInputChange = this.handleTextInputChange.bind(this);
+        this.handleInputPriorityChange = this.handleInputPriorityChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
 
-    handleSubmit(event) {
+    resetTaskInput(){
+        this.setState({taskInputText: '',
+                taskInputPriority: 3,
+        });
+    }
+
+    handleTextInputChange(event) {
+        this.setState({taskInputText: event.target.value});
+    }
+
+    handleInputPriorityChange(event) {
+        this.setState({taskInputPriority: event.target.value});
+    }
+
+    handleSubmit() {
         //event.preventDefault();
 
         // Find the text field via the React ref
-        const text = ReactDOM.findDOMNode(this.refs.textInput).value.trim();
+        const text = this.state.taskInputText.trim();
+        const priority = this.state.taskInputPriority;
 
-        Meteor.call('tasks.insert', text);
+        Meteor.call('tasks.insert', {text, priority});
 
         // Clear form
-        ReactDOM.findDOMNode(this.refs.textInput).value = '';
+        this.resetTaskInput();
     }
 
     toggleHideCompleted() {
@@ -72,27 +100,6 @@ class App extends Component {
     }
 
     renderTasks() {
-        let filteredTasks = this.props.tasks;
-
-        if (this.state.hideCompleted) {
-            filteredTasks = filteredTasks.filter(task => !task.checked);
-        }
-
-        return filteredTasks.map((task) => {
-            const currentUserId = this.props.currentUser && this.props.currentUser._id;
-            const showPrivateButton = task.owner === currentUserId;
-
-            return (
-                <Task
-                    key={task._id}
-                    task={task}
-                    showPrivateButton={showPrivateButton}
-                />
-            );
-        });
-    }
-
-    renderTasks2() {
         let filteredTasks = this.props.tasks;
 
         if (this.state.hideCompleted) {
@@ -134,49 +141,54 @@ class App extends Component {
                     <AccountsUIWrapper />
 
                     { this.props.currentUser ?
-                        <form className="new-task" onSubmit={this.handleSubmit.bind(this)} >
-                            <input
-                                type="text"
-                                ref="textInput"
-                                placeholder="Type to add new tasks"
-                            />
+                        (
+                            <div className={classes.inputTask}>
+                                <form className="new-task" onSubmit={this.handleSubmit} >
+                                    <input
+                                        type="text"
+                                        ref="textInput"
+                                        placeholder="Type to add new tasks"
+                                        value={this.state.taskInputText}
+                                        onChange={this.handleTextInputChange}
+                                    />
 
-                            {/*<TextField*/}
-                                {/*id="outlined-with-placeholder"*/}
-                                {/*label="Type to add new tasks"*/}
-                                {/*placeholder="New Task"*/}
-                                {/*className={classes.textField}*/}
-                                {/*margin="normal"*/}
-                                {/*variant="outlined"*/}
-                                {/*onKeyPress={(ev) => {*/}
+                                    {/*<TextField*/}
+                                    {/*id="outlined-with-placeholder"*/}
+                                    {/*label="Type to add new tasks"*/}
+                                    {/*placeholder="New Task"*/}
+                                    {/*className={classes.textField}*/}
+                                    {/*margin="normal"*/}
+                                    {/*variant="outlined"*/}
+                                    {/*onKeyPress={(ev) => {*/}
                                     {/*console.log(`Pressed keyCode ${ev.key}`);*/}
                                     {/*if (ev.key === 'Enter') {*/}
-                                        {/*ev.preventDefault();*/}
-                                        {/*this.handleSubmit.bind(this)();*/}
+                                    {/*ev.preventDefault();*/}
+                                    {/*this.handleSubmit.bind(this)();*/}
                                     {/*}*/}
-                                {/*}}*/}
-                            {/*/>*/}
+                                    {/*}}*/}
+                                    {/*/>*/}
 
-                        </form>  : ''
+                                </form>
+
+                                <FormControl className={classes.formControl}>
+                                    <InputLabel shrink htmlFor="age-label-placeholder">
+                                        Priority
+                                    </InputLabel>
+                                    <Select
+                                        value={this.state.taskInputPriority}
+                                        onChange={this.handleInputPriorityChange}
+                                        displayEmpty
+                                        className={classes.textSelectMenu}
+                                    >
+                                        <MenuItem value={1} className={classes.textSelectMenu}>High</MenuItem>
+                                        <MenuItem value={2} className={classes.textSelectMenu}>Medium</MenuItem>
+                                        <MenuItem value={3} className={classes.textSelectMenu}>Low</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </div>
+
+                        ): ''
                     }
-
-                    <FormControl className={classes.formControl}>
-                        <InputLabel shrink htmlFor="age-label-placeholder">
-                            Priority
-                        </InputLabel>
-                        <Select
-                            value={this.state.newTaskPriority}
-                            onChange={this.handleChange}
-                            input={<Input name="age" id="age-label-placeholder" />}
-                            displayEmpty
-                            name="age"
-                            className={classes.selectEmpty}
-                        >
-                            <MenuItem value={1}>High</MenuItem>
-                            <MenuItem value={2}>Medium</MenuItem>
-                            <MenuItem value={3}>Low</MenuItem>
-                        </Select>
-                    </FormControl>
 
                 </header>
 
@@ -185,7 +197,7 @@ class App extends Component {
                 {/*</ul>*/}
 
                 <List component="nav">
-                    {this.renderTasks2()}
+                    {this.renderTasks()}
                 </List>
             </div>
         );

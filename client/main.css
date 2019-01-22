@@ -110,7 +110,8 @@ header .hide-completed {
 }
 
 .toggle-private {
-  margin-left: 5px;
+  float: left;
+  margin-top: 2px;
 }
 
 @media (max-width: 600px) {

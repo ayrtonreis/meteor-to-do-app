@@ -10,6 +10,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Divider from '@material-ui/core/Divider';
 import Delete from '@material-ui/icons/DeleteOutlined';
+import Chip from '@material-ui/core/Chip';
 
 import { Tasks } from '../api/tasks.js';
 
@@ -19,6 +20,21 @@ const styles = theme => ({
     },
     private: {
         backgroundColor: '#dedede'
+    },
+    chip: {
+        marginLeft: '0',
+        fontSize: '10px',
+        width: '50px',
+        height: '16px'
+    },
+    red: {
+        backgroundColor: '#d07873',
+    },
+    green: {
+        backgroundColor: '#a5e888',
+    },
+    gray: {
+        backgroundColor: '#919191',
     }
 });
 
@@ -30,6 +46,8 @@ const styles = theme => ({
          this.taskOwner = this.task.owner;
 
          this.isUserOwner = this.isUserOwner.bind(this);
+         this.classes = this.props.classes;
+         this.priority = this.props.task.priority;
      }
 
     toggleChecked() {
@@ -61,47 +79,57 @@ const styles = theme => ({
             private: this.props.task.private,
         });
 
-        console.log(this.task);
-        console.log(this.isUserOwner);
+        const chipPriority = this.priority || 3;
+        const chipColors = [this.classes.red, this.classes.gray, this.classes.green];
+        const chipLabels = ['HIGH', 'MEDIUM', 'LOW'];
+        const chipColor = chipColors[chipPriority-1];
+        const chipLabel = chipLabels[chipPriority-1];
+
+        const chipClassNames = classnames({
+            [this.classes.chip]: true,
+            [chipColor]: true,
+        });
+
+        //console.log(this.task);
 
         return (
-            <ListItem className={this.props.task.private ? this.props.classes.private : ''}>
-
+            <div>
+                <ListItem className={this.props.task.private ? this.props.classes.private : ''}>
+                    <Chip label={chipLabel} className={chipClassNames} />
 
                     <Checkbox
                         checked={this.props.task.checked}
                         onChange={this.toggleChecked.bind(this)}
                         color="primary"
-                        disabled={this.isUserOwner(this.taskOwner) ? false : true}
+                        disabled={!this.isUserOwner(this.taskOwner)}
+                    />
+
+                    <ListItemText
+                        className={this.props.task.checked ? this.props.classes.textStrikedThrough : ''}
+                        primary={this.props.task.username +': '+ this.props.task.text}
                     />
 
 
-
-                { this.props.showPrivateButton ? (
-                    <button className="toggle-private" onClick={this.togglePrivate.bind(this)}>
-                        { this.props.task.private ? 'Private' : 'Public' }
-                    </button>
-                ) : ''}
-
-                <ListItemText
-                    className={this.props.task.checked ? this.props.classes.textStrikedThrough : ''}
-                    primary={this.props.task.username +': '+ this.props.task.text}
-                />
-
-
-                <ListItemSecondaryAction>
-                    {   this.isUserOwner(this.taskOwner) ? (
-                        <ListItemIcon>
-
-                            <button className="delete" onClick={this.deleteThisTask.bind(this)}>
-                                <Delete/>
+                    <ListItemSecondaryAction>
+                        { this.props.showPrivateButton ? (
+                            <button className="toggle-private" onClick={this.togglePrivate.bind(this)}>
+                                { this.props.task.private ? 'Private' : 'Public' }
                             </button>
+                        ) : ''}
 
-                        </ListItemIcon>
-                    ) : ''}
-                </ListItemSecondaryAction>
+                        {   this.isUserOwner(this.taskOwner) ? (
+                            <ListItemIcon>
 
-            </ListItem>
+                                <button className="delete" onClick={this.deleteThisTask.bind(this)}>
+                                    <Delete/>
+                                </button>
+
+                            </ListItemIcon>
+                        ) : ''}
+                    </ListItemSecondaryAction>
+                </ListItem>
+            </div>
+
         );
     }
 }
