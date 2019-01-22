@@ -24,6 +24,14 @@ const styles = theme => ({
 
 // Task component - represents a single todo item
  class Task extends Component {
+     constructor(props){
+         super(props);
+         this.task = props.task;
+         this.taskOwner = this.task.owner;
+
+         this.isUserOwner = this.isUserOwner.bind(this);
+     }
+
     toggleChecked() {
         // Set the checked property to the opposite of its current value
         Meteor.call('tasks.setChecked', this.props.task._id, !this.props.task.checked);
@@ -37,6 +45,14 @@ const styles = theme => ({
         Meteor.call('tasks.setPrivate', this.props.task._id, ! this.props.task.private);
     }
 
+    getUserId(){
+        return Meteor.userId();
+    }
+
+    isUserOwner(ownerId){
+        return Meteor.userId() === ownerId;
+    }
+
     render() {
         // Give tasks a different className when they are checked off,
         // so that we can style them nicely in CSS
@@ -45,14 +61,21 @@ const styles = theme => ({
             private: this.props.task.private,
         });
 
+        console.log(this.task);
+        console.log(this.isUserOwner);
+
         return (
             <ListItem className={this.props.task.private ? this.props.classes.private : ''}>
 
-                <Checkbox
-                    checked={this.props.task.checked}
-                    onChange={this.toggleChecked.bind(this)}
-                    color="primary"
-                />
+
+                    <Checkbox
+                        checked={this.props.task.checked}
+                        onChange={this.toggleChecked.bind(this)}
+                        color="primary"
+                        disabled={this.isUserOwner(this.taskOwner) ? false : true}
+                    />
+
+
 
                 { this.props.showPrivateButton ? (
                     <button className="toggle-private" onClick={this.togglePrivate.bind(this)}>
@@ -65,14 +88,17 @@ const styles = theme => ({
                     primary={this.props.task.username +': '+ this.props.task.text}
                 />
 
+
                 <ListItemSecondaryAction>
+                    {   this.isUserOwner(this.taskOwner) ? (
+                        <ListItemIcon>
 
-                    <ListItemIcon>
-                        <button className="delete" onClick={this.deleteThisTask.bind(this)}>
-                            <Delete/>
-                        </button>
-                    </ListItemIcon>
+                            <button className="delete" onClick={this.deleteThisTask.bind(this)}>
+                                <Delete/>
+                            </button>
 
+                        </ListItemIcon>
+                    ) : ''}
                 </ListItemSecondaryAction>
 
             </ListItem>
