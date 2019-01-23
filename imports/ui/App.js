@@ -207,6 +207,7 @@ class App extends Component {
 App = withStyles(styles)(App);
 
 export default withTracker(() => {
+
     Meteor.subscribe('tasks');
 
     return {

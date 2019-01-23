@@ -1,6 +1,8 @@
 import { Meteor } from 'meteor/meteor';
 import { Mongo } from 'meteor/mongo';
 import { check } from 'meteor/check';
+import {actionList} from './actionList'
+import {logActivity} from "./activityLog";
 
 export const Tasks = new Mongo.Collection('tasks');
 
@@ -27,7 +29,13 @@ Meteor.methods({
             throw new Meteor.Error('not-authorized');
         }
 
-        Tasks.insert({
+        console.warn('INSERT BEFORE');
+        // Meteor.call('activity_log.insert', 1, actionList.CREATE_TASK);
+        //logActivity('1', actionList.CREATE_TASK)
+        console.warn('INSERT AFTER');
+
+
+        const newTaskId = Tasks.insert({
             text,
             priority,
             createdAt: new Date(),
@@ -35,6 +43,8 @@ Meteor.methods({
             username: Meteor.users.findOne(this.userId).username,
             deleted: false
         });
+
+        logActivity(newTaskId, actionList.CREATE_TASK);
     },
     'tasks.remove'(taskId) {
         check(taskId, String);
@@ -47,6 +57,8 @@ Meteor.methods({
 
         //Tasks.remove(taskId);
         Tasks.update(taskId, { $set: { deleted: true } });
+
+        logActivity(taskId, actionList.DELETE_TASK);
     },
     'tasks.setChecked'(taskId, setChecked) {
         check(taskId, String);
@@ -59,6 +71,8 @@ Meteor.methods({
         }
 
         Tasks.update(taskId, { $set: { checked: setChecked } });
+
+        logActivity(taskId, (setChecked ? actionList.CHECK_TASK : actionList.UNCHECK_TASK));
     },
     'tasks.setPrivate'(taskId, setToPrivate) {
         check(taskId, String);
@@ -72,5 +86,7 @@ Meteor.methods({
         }
 
         Tasks.update(taskId, { $set: { private: setToPrivate } });
+
+        logActivity(taskId, (setToPrivate ? actionList.MAKE_TASK_PRIVATE : actionList.MAKE_TASK_PUBLIC));
     },
 });
